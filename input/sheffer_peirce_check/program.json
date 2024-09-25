@@ -1,0 +1,22 @@
+{
+    "instructions": [
+      {
+        "operation": {
+          "Nand": {
+            "first": 1,
+            "second": 2
+          }
+        },
+        "result": 3
+      },
+      {
+        "operation": {
+          "Nor": {
+            "first": 1,
+            "second": 2
+          }
+        },
+        "result": 4
+      }
+    ]
+  }

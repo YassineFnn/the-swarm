@@ -130,14 +130,21 @@ impl ShardProcessor {
                 operation.second.as_inner(),
                 reed_solomon_erasure::galois_8::add,
             ),
-            // inverses in GF(2^8) are the same values, because
-            // the arithmetic is done on polynomials over GF(2)
-            // and addition of any coefficient on itself gives 0
-            // in GF(2)
             Operation::Inv(operation) => operation.operand.as_inner().map(|n| n),
+            Operation::Nand(operation) => map_zip(
+                operation.first.as_inner(),
+                operation.second.as_inner(),
+                |a, b| (!(a != 0 && b != 0)) as u8,  // Convert bool to u8
+            ),
+            Operation::Nor(operation) => map_zip(
+                operation.first.as_inner(),
+                operation.second.as_inner(),
+                |a, b| (!(a != 0 || b != 0)) as u8,  // Convert bool to u8
+            ),            
         };
         Shard(array)
     }
+    
 
     async fn retrieve_operand(
         &self,
@@ -219,6 +226,15 @@ impl ShardProcessor {
             ),
             Operation::Inv(unary) => Operation::Inv(
                 self.retrieve_unary(unary, context)
+                    .await?
+                    .ok_or(Error::NoShardsAssigned)?,
+            ),
+            Operation::Nand(binary) => Operation::Nand(
+                self.retrieve_binary(binary, context)
+                    .await?
+                    .ok_or(Error::NoShardsAssigned)?,
+            ),Operation::Nor(binary) => Operation::Nor(
+                self.retrieve_binary(binary, context)
                     .await?
                     .ok_or(Error::NoShardsAssigned)?,
             ),

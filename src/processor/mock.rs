@@ -48,6 +48,16 @@ impl MockProcessor {
             // and addition of any coefficient on itself gives 0
             // in GF(2)
             Operation::Inv(operation) => operation.operand.as_inner().map(|n| n),
+            Operation::Nand(operation) => map_zip(
+                operation.first.as_inner(),
+                operation.second.as_inner(),
+                |a, b| if a == 0 || b == 0 { 1 } else { 0 }, // NAND logic (0: false, 1: true)
+            ),
+            Operation::Nor(operation) => map_zip(
+                operation.first.as_inner(),
+                operation.second.as_inner(),
+                |a, b| if a == 0 && b == 0 { 1 } else { 0 }, // NOR logic (0: false, 1: true)
+            ),
         };
         Data(array)
     }
@@ -87,6 +97,8 @@ impl MockProcessor {
                 Operation::Plus(Self::retrieve_binary(binary, data_storage)?)
             }
             Operation::Inv(unary) => Operation::Inv(Self::retrieve_unary(unary, data_storage)?),
+            Operation::Nand(binary) => Operation::Nand(Self::retrieve_binary(binary, data_storage)?),
+            Operation::Nor(binary) => Operation::Nor(Self::retrieve_binary(binary, data_storage)?),
         };
         Ok(retrieved)
     }
